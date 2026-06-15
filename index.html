@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Học Rust - Từ A đến Z</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --rust: #CE422B; --rust-dark: #8C1F12; --rust-light: #FF6B4A;
+    --rust-glow: rgba(206, 66, 43, .25);
+    --glass: rgba(255,255,255,0.05); --glass-border: rgba(255,255,255,0.08);
+    --glass-hover: rgba(255,255,255,0.09);
+    --text: #F0F0F0; --text2: rgba(255,255,255,0.50); --text3: rgba(255,255,255,0.22);
+    --accent: #64B5F6; --accent2: #81C784; --accent3: #CE93D8;
+    --bg-base: #07070a; --bg-card: rgba(255,255,255,0.05);
+    --radius: 16px; --radius-sm: 10px; --blur: 28px;
+    --focus-glow: rgba(206,66,43,.15);
+  }
+
+  [data-theme="light"] {
+    --glass: rgba(255,255,255,0.7); --glass-border: rgba(0,0,0,0.08);
+    --glass-hover: rgba(255,255,255,0.85);
+    --text: #1a1a2e; --text2: rgba(0,0,0,0.50); --text3: rgba(0,0,0,0.20);
+    --bg-base: #f5f5f7; --bg-card: rgba(255,255,255,0.8);
+    --focus-glow: rgba(206,66,43,.10);
+    --accent: #1976D2; --accent2: #388E3C; --accent3: #7B1FA2;
+  }
+
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+  body {
+    font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7;
+    background: var(--bg-base); transition: background .3s, color .3s; min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 800px 500px at 85% 10%, rgba(206,66,43,.07) 0%, transparent 60%),
+      radial-gradient(ellipse 700px 700px at 15% 55%, rgba(100,181,246,.05) 0%, transparent 60%),
+      radial-gradient(ellipse 600px 600px at 50% 90%, rgba(129,199,132,.04) 0%, transparent 60%);
+    background-attachment: fixed;
+  }
+
+  [data-theme="light"] body { background-image: none; }
+
+  .orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; filter: blur(80px); animation: orbFloat 14s ease-in-out infinite alternate; }
+  .orb-1 { width: 400px; height: 400px; background: rgba(206,66,43,.08); top: -100px; right: -100px; }
+  .orb-2 { width: 350px; height: 350px; background: rgba(100,181,246,.06); bottom: -80px; left: -80px; animation-delay: -5s; }
+  .orb-3 { width: 300px; height: 300px; background: rgba(129,199,132,.05); top: 50%; left: 50%; transform: translate(-50%,-50%); animation-delay: -10s; }
+  [data-theme="light"] .orb { display: none; }
+
+  @keyframes orbFloat { 0% { transform: translate(0,0) scale(1); } 33% { transform: translate(30px,-20px) scale(1.1); } 66% { transform: translate(-20px,30px) scale(0.9); } 100% { transform: translate(20px,10px) scale(1.05); } }
+
+  /* === PARTICLES === */
+  #particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .particle {
+    position: absolute; width: 3px; height: 3px; border-radius: 50%;
+    background: rgba(255,255,255,.2); animation: particleFloat linear infinite;
+  }
+  @keyframes particleFloat { 0% { transform: translateY(100vh) scale(0); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-10vh) scale(1); opacity: 0; } }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--text3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text2); }
+
+  /* === HEADER === */
+  header { position: sticky; top: 14px; z-index: 100; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  .header-inner {
+    background: rgba(12,12,16,0.72); backdrop-filter: blur(36px); -webkit-backdrop-filter: blur(36px);
+    border: 1px solid var(--glass-border); border-radius: 18px;
+    padding: 8px 16px; display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 4px 30px rgba(0,0,0,.3); transition: background .3s;
+  }
+  [data-theme="light"] .header-inner { background: rgba(255,255,255,0.8); }
+
+  .logo { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; text-decoration: none; color: var(--text); flex-shrink: 0; }
+  .logo-icon {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: linear-gradient(135deg, var(--rust), var(--rust-light));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fira Code', monospace; font-weight: 700; font-size: 14px; color: #fff;
+    box-shadow: 0 2px 16px rgba(206,66,43,.35);
+  }
+  .header-center { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center; }
+  nav { display: flex; gap: 2px; flex-wrap: wrap; }
+  nav a {
+    color: var(--text2); text-decoration: none; font-size: 12px; font-weight: 500;
+    padding: 5px 12px; border-radius: 8px; transition: all .2s;
+  }
+  nav a:hover { color: var(--text); background: rgba(255,255,255,.06); }
+  nav a.active { color: #fff; background: rgba(206,66,43,.18); }
+  .header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+  .icon-btn {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: rgba(255,255,255,.04); border: 1px solid var(--glass-border);
+    color: var(--text2); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 15px; transition: all .2s;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,.08); color: var(--text); }
+  [data-theme="light"] .icon-btn { background: rgba(0,0,0,.04); }
+  [data-theme="light"] .icon-btn:hover { background: rgba(0,0,0,.08); }
+
+  /* === SEARCH === */
+  .search-overlay {
+    position: fixed; inset: 0; z-index: 300; display: none;
+    background: rgba(0,0,0,.5); backdrop-filter: blur(10px);
+    justify-content: center; align-items: flex-start; padding-top: 15vh;
+  }
+  .search-overlay.active { display: flex; }
+  .search-box {
+    background: rgba(14,14,20,0.92); backdrop-filter: blur(48px);
+    border: 1px solid var(--glass-border); border-radius: 18px;
+    padding: 20px 24px; width: 92%; max-width: 560px;
+    box-shadow: 0 32px 100px rgba(0,0,0,.5);
+  }
+  [data-theme="light"] .search-box { background: rgba(255,255,255,0.95); }
+  .search-box input {
+    width: 100%; background: rgba(255,255,255,.04); border: 1px solid var(--glass-border);
+    border-radius: 10px; padding: 12px 16px; font-size: 15px; color: var(--text);
+    outline: none; font-family: 'Inter', sans-serif;
+  }
+  .search-box input::placeholder { color: var(--text3); }
+  .search-box input:focus { border-color: var(--rust); }
+  .search-results { margin-top: 12px; max-height: 300px; overflow-y: auto; }
+  .search-results::-webkit-scrollbar { width: 3px; }
+  .search-results a {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    border-radius: 8px; text-decoration: none; color: var(--text2); font-size: 13px;
+    transition: all .15s;
+  }
+  .search-results a:hover, .search-results a.highlight { background: rgba(255,255,255,.06); color: var(--text); }
+  .search-results .sr-letter {
+    width: 22px; height: 22px; border-radius: 5px;
+    background: rgba(206,66,43,.15); color: var(--rust-light);
+    display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;
+  }
+  .search-hint { font-size: 11px; color: var(--text3); margin-top: 8px; display: flex; gap: 12px; }
+  .search-hint kbd {
+    background: rgba(255,255,255,.06); padding: 1px 6px; border-radius: 3px;
+    font-family: 'Inter', sans-serif; font-size: 10px;
+  }
+
+  /* === HERO === */
+  .hero { position: relative; z-index: 1; text-align: center; padding: 110px 24px 60px; max-width: 800px; margin: 0 auto; }
+  .hero h1 {
+    font-size: 60px; font-weight: 900; margin-bottom: 14px; letter-spacing: -1.5px; line-height: 1.1;
+    background: linear-gradient(135deg, #fff 0%, #FF6B4A 35%, #CE422B 65%, #F5F5F5 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  [data-theme="light"] .hero h1 { background: linear-gradient(135deg, #1a1a2e 0%, #CE422B 50%, #FF6B4A 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { font-size: 16px; color: var(--text2); max-width: 540px; margin: 0 auto 24px; line-height: 1.75; }
+  .hero-badge {
+    display: inline-flex; gap: 8px; align-items: center;
+    background: rgba(255,255,255,.04); backdrop-filter: blur(14px);
+    border: 1px solid var(--glass-border); border-radius: 100px;
+    padding: 5px 18px; font-size: 12px; color: var(--text2); margin-bottom: 20px;
+  }
+  .hero-badge strong { color: var(--accent2); }
+  .hero-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 11px 26px; border-radius: 11px;
+    font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; border: none;
+    transition: all .25s cubic-bezier(.4,0,.2,1);
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--rust), var(--rust-light)); color: #fff; box-shadow: 0 4px 24px rgba(206,66,43,.3); }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 36px rgba(206,66,43,.45); }
+  .btn-secondary { background: rgba(255,255,255,.04); backdrop-filter: blur(14px); color: var(--text); border: 1px solid var(--glass-border); }
+  .btn-secondary:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); transform: translateY(-3px); }
+  .stats-bar { display: flex; justify-content: center; gap: 56px; padding: 30px 24px 0; margin: 0 auto; }
+  .stat { text-align: center; }
+  .stat-num { font-size: 28px; font-weight: 800; background: linear-gradient(135deg, var(--text), var(--text2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+  /* === TOC === */
+  .toc-btn {
+    position: fixed; right: 20px; top: 50%; transform: translateY(-50%); z-index: 50;
+    width: 44px; height: 44px; border-radius: 13px;
+    background: rgba(12,12,16,0.7); backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border); box-shadow: 0 4px 24px rgba(0,0,0,.3);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 17px; color: var(--text2); transition: all .3s;
+  }
+  .toc-btn:hover { color: var(--text); border-color: rgba(255,255,255,.18); transform: translateY(-50%) scale(1.06); }
+  .toc-btn .label {
+    position: absolute; right: 56px; background: rgba(12,12,16,0.85); backdrop-filter: blur(14px);
+    border: 1px solid var(--glass-border); padding: 5px 14px; border-radius: 8px;
+    font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .toc-btn:hover .label { opacity: 1; }
+  .toc-btn .badge {
+    position: absolute; top: -5px; right: -5px; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--rust); font-size: 8px; font-weight: 700; color: #fff;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 0 12px rgba(206,66,43,.5);
+  }
+  .toc-overlay {
+    position: fixed; inset: 0; z-index: 200; display: none;
+    background: rgba(0,0,0,.55); backdrop-filter: blur(10px);
+    justify-content: center; align-items: center;
+  }
+  .toc-overlay.active { display: flex; }
+  .toc-panel {
+    background: rgba(14,14,20,0.88); backdrop-filter: blur(48px);
+    border: 1px solid var(--glass-border); border-radius: 22px;
+    padding: 30px 34px; max-width: 740px; width: 92%; max-height: 82vh; overflow-y: auto;
+    box-shadow: 0 32px 100px rgba(0,0,0,.5);
+  }
+  [data-theme="light"] .toc-panel { background: rgba(255,255,255,0.92); }
+  .toc-panel::-webkit-scrollbar { width: 3px; }
+  .toc-panel h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+  .toc-panel > p { color: var(--text2); font-size: 13px; margin-bottom: 20px; }
+  .toc-close {
+    position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border-radius: 8px;
+    background: rgba(255,255,255,.04); border: 1px solid var(--glass-border); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 14px; transition: all .2s;
+  }
+  .toc-close:hover { background: rgba(255,255,255,.08); color: var(--text); }
+  .toc-panel { position: relative; }
+  .toc-section { margin-bottom: 16px; }
+  .toc-section:last-child { margin-bottom: 0; }
+  .toc-section-header {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--text2); margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1px solid var(--glass-border);
+  }
+  .toc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 4px; }
+  .toc-item {
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 7px;
+    cursor: pointer; font-size: 13px; color: var(--text2); text-decoration: none; transition: all .15s;
+  }
+  .toc-item:hover { background: rgba(255,255,255,.06); color: var(--text); }
+  .toc-item .toc-letter {
+    width: 22px; height: 22px; border-radius: 5px;
+    background: rgba(206,66,43,.15); color: var(--rust-light);
+    display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;
+  }
+  .toc-progress { margin-top: 12px; height: 3px; background: rgba(255,255,255,.05); border-radius: 2px; overflow: hidden; }
+  .toc-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--rust), var(--rust-light)); border-radius: 2px; transition: width .5s; }
+
+  /* === SECTIONS === */
+  .section { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 56px 24px; transition: opacity .4s, filter .4s; }
+  .section:not(:last-of-type)::after { content: ''; display: block; width: 40%; height: 1px; margin: 0 auto; margin-top: 56px; background: linear-gradient(90deg, transparent, var(--glass-border), transparent); }
+  .section-header { margin-bottom: 32px; }
+  .section-tag {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px; padding: 4px 14px; border-radius: 7px;
+    margin-bottom: 10px; border: 1px solid var(--glass-border); backdrop-filter: blur(8px);
+  }
+  .section h2 {
+    font-size: 30px; font-weight: 800; margin-bottom: 10px; letter-spacing: -.4px;
+    background: linear-gradient(135deg, var(--text) 40%, var(--text2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  [data-theme="light"] .section h2 { background: linear-gradient(135deg, #1a1a2e 40%, #555 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .section-desc { color: var(--text2); font-size: 14px; line-height: 1.7; }
+
+  /* === CARDS === */
+  .card-grid { display: grid; gap: 14px; }
+  .card-grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .card-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .card {
+    background: var(--glass); backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+    border: 1px solid var(--glass-border); border-radius: var(--radius);
+    padding: 22px; transition: all .35s cubic-bezier(.4,0,.2,1); position: relative; overflow: hidden;
+  }
+  .card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(135deg, rgba(255,255,255,.04) 0%, transparent 50%); pointer-events: none; }
+  .card:hover { border-color: rgba(255,255,255,.16); transform: translateY(-4px); background: var(--glass-hover); box-shadow: 0 12px 48px rgba(0,0,0,.4); }
+  .card-icon {
+    width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-bottom: 12px; background: rgba(255,255,255,.04); border: 1px solid var(--glass-border);
+  }
+  .card h3 { font-size: 15px; font-weight: 600; margin-bottom: 5px; }
+  .card p { font-size: 13px; color: var(--text2); line-height: 1.65; }
+  .card code { font-family: 'Fira Code', monospace; font-size: 12px; background: rgba(255,255,255,.06); padding: 2px 6px; border-radius: 4px; color: var(--accent); }
+  .card ul { padding-left: 16px; color: var(--text2); font-size: 13px; }
+  .card ul li { margin-bottom: 3px; }
+  .card ul li strong { color: var(--text); }
+
+  /* === CODE BLOCKS === */
+  .code-block {
+    background: rgba(0,0,0,.4); backdrop-filter: blur(18px);
+    border: 1px solid var(--glass-border); border-radius: var(--radius-sm);
+    margin: 12px 0; overflow: hidden; position: relative;
+  }
+  .code-block::before { content: ''; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(180deg, rgba(255,255,255,.02) 0%, transparent 100%); pointer-events: none; }
+  .code-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 14px; background: rgba(255,255,255,.025);
+    border-bottom: 1px solid var(--glass-border);
+    font-size: 12px; color: var(--text2); font-family: 'Fira Code', monospace;
+  }
+  .code-actions { display: flex; gap: 6px; }
+  .code-btn {
+    background: rgba(255,255,255,.04); border: 1px solid var(--glass-border);
+    color: var(--text2); cursor: pointer; font-size: 11px; padding: 3px 10px;
+    border-radius: 6px; transition: all .2s; display: flex; align-items: center; gap: 4px;
+  }
+  .code-btn:hover { background: rgba(255,255,255,.08); color: var(--text); }
+  .code-btn.copied { background: rgba(129,199,132,.15); color: var(--accent2); border-color: rgba(129,199,132,.3); }
+  .code-block pre { padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.65; font-family: 'Fira Code', monospace; color: #e8eaed; tab-size: 2; }
+  .code-block pre .kw{color:#f97583}.code-block pre .fn{color:#b392f0}.code-block pre .ty{color:#79b8ff}.code-block pre .str{color:#9ecbff}.code-block pre .cm{color:#6a737d;font-style:italic}.code-block pre .num{color:#79b8ff}.code-block pre .macro{color:#faa272}.code-block pre .preproc{color:#faa272}
+
+  /* === TOPICS === */
+  .topic { margin-bottom: 36px; scroll-margin-top: 80px; }
+  .topic:last-child { margin-bottom: 0; }
+  .topic h3 {
+    font-size: 18px; font-weight: 600; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .topic h3 .num {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--rust), var(--rust-light));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+    box-shadow: 0 2px 12px rgba(206,66,43,.35);
+  }
+  .topic-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .topic-check {
+    width: 18px; height: 18px; border-radius: 5px; cursor: pointer; flex-shrink: 0;
+    background: rgba(255,255,255,.04); border: 1px solid var(--glass-border);
+    display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all .2s;
+  }
+  .topic-check.checked { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+
+  /* Focus mode */
+  .section.blurred { opacity: .15; filter: blur(4px); pointer-events: none; }
+  .section.focused { opacity: 1; filter: none; pointer-events: auto; }
+  .section.focused .topic-header .topic-focus-btn { display: none; }
+  .topic-focus-btn {
+    margin-left: auto; padding: 3px 10px; border-radius: 6px; cursor: pointer;
+    background: rgba(255,255,255,.04); border: 1px solid var(--glass-border);
+    color: var(--text2); font-size: 11px; transition: all .2s;
+  }
+  .topic-focus-btn:hover { background: rgba(255,255,255,.08); color: var(--text); }
+
+  /* === TIMELINE === */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before { content: ''; position: absolute; left: 10px; top: 10px; bottom: 10px; width: 1px; background: linear-gradient(180deg, var(--glass-border) 0%, transparent 100%); }
+  .timeline-item {
+    position: relative; margin-bottom: 22px; padding: 18px 22px;
+    background: var(--glass); backdrop-filter: blur(var(--blur));
+    border: 1px solid var(--glass-border); border-radius: var(--radius);
+    transition: all .3s cubic-bezier(.4,0,.2,1);
+  }
+  .timeline-item:hover { border-color: rgba(255,255,255,.16); transform: translateY(-3px); box-shadow: 0 8px 36px rgba(0,0,0,.3); }
+  .timeline-item::before { content: ''; position: absolute; left: -22px; top: 24px; width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(135deg, var(--rust), var(--rust-light)); box-shadow: 0 0 14px rgba(206,66,43,.45); }
+  .timeline-item .phase { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: rgba(206,66,43,.65); margin-bottom: 4px; }
+  .timeline-item h3 { font-size: 16px; font-weight: 600; margin-bottom: 5px; }
+  .timeline-item p { font-size: 13px; color: var(--text2); margin-bottom: 8px; line-height: 1.6; }
+  .timeline-item .tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .timeline-item .tags span { font-size: 11px; padding: 2px 10px; border-radius: 5px; background: rgba(255,255,255,.04); border: 1px solid var(--glass-border); color: var(--text2); }
+
+  .c-basics { background: rgba(100,181,246,.10); border-color: rgba(100,181,246,.2); color: var(--accent); }
+  .c-ownership { background: rgba(129,199,132,.10); border-color: rgba(129,199,132,.2); color: var(--accent2); }
+  .c-advanced { background: rgba(206,147,216,.10); border-color: rgba(206,147,216,.2); color: var(--accent3); }
+  .c-tools { background: rgba(250,162,114,.10); border-color: rgba(250,162,114,.2); color: #faa272; }
+  .c-ecosystem { background: rgba(206,66,43,.10); border-color: rgba(206,66,43,.2); color: var(--rust-light); }
+
+  /* === FOOTER === */
+  footer { position: relative; z-index: 1; text-align: center; padding: 44px 24px; color: var(--text3); font-size: 13px; border-top: 1px solid var(--glass-border); background: rgba(0,0,0,.2); backdrop-filter: blur(10px); }
+  footer a { color: var(--text2); text-decoration: none; transition: color .2s; }
+  footer a:hover { color: var(--text); }
+
+  /* === REVEAL === */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s cubic-bezier(.4,0,.2,1), transform .6s cubic-bezier(.4,0,.2,1); }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* === PROGRESS === */
+  .progress-wrap { background: var(--glass); backdrop-filter: blur(var(--blur)); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 20px; margin-bottom: 28px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--text2); margin-bottom: 8px; }
+  .progress-bar { height: 5px; background: rgba(255,255,255,.05); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--rust), var(--rust-light), var(--accent)); border-radius: 3px; transition: width 1s cubic-bezier(.4,0,.2,1); }
+
+  /* === BACK TO TOP === */
+  .back-top {
+    position: fixed; right: 20px; bottom: 24px; z-index: 45;
+    width: 44px; height: 44px; border-radius: 13px;
+    background: rgba(12,12,16,0.7); backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border); box-shadow: 0 4px 24px rgba(0,0,0,.3);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px; color: var(--text2);
+    opacity: 0; transform: translateY(20px); transition: all .3s; pointer-events: none;
+  }
+  .back-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .back-top:hover { color: var(--text); border-color: rgba(255,255,255,.18); transform: translateY(-3px); }
+
+  /* === KEYBOARD HINT === */
+  .kbd-hint {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 40;
+    background: rgba(12,12,16,0.6); backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border); border-radius: 10px;
+    padding: 6px 16px; display: flex; align-items: center; gap: 12px;
+    font-size: 11px; color: var(--text3); opacity: 0; transition: opacity .6s;
+  }
+  .kbd-hint.show { opacity: 1; }
+  .kbd-hint kbd {
+    background: rgba(255,255,255,.06); padding: 1px 7px; border-radius: 4px;
+    font-family: 'Inter', sans-serif; font-size: 10px; color: var(--text2);
+  }
+  .kbd-hint.hide { display: none; }
+
+  /* === FOCUS EXIT === */
+  .focus-exit {
+    position: fixed; top: 80px; right: 24px; z-index: 30; display: none;
+    background: rgba(12,12,16,0.8); backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border); border-radius: 10px;
+    padding: 8px 16px; cursor: pointer; color: var(--text); font-size: 13px;
+    align-items: center; gap: 8px; transition: all .2s;
+  }
+  .focus-exit:hover { background: rgba(20,20,28,0.9); }
+  .focus-exit.visible { display: flex; }
+  .focus-exit kbd { background: rgba(255,255,255,.06); padding: 1px 7px; border-radius: 4px; font-size: 10px; }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 768px) {
+    header { top: 8px; padding: 0 12px; }
+    .header-inner { flex-wrap: wrap; padding: 8px 12px; }
+    .header-center { order: 3; width: 100%; justify-content: center; }
+    nav { justify-content: center; }
+    nav a { font-size: 11px; padding: 4px 8px; }
+    .hero h1 { font-size: 32px; }
+    .hero { padding: 70px 16px 40px; }
+    .hero p { font-size: 14px; }
+    .card-grid-2, .card-grid-3 { grid-template-columns: 1fr; }
+    .stats-bar { gap: 24px; flex-wrap: wrap; }
+    .section { padding: 32px 16px; }
+    .section h2 { font-size: 24px; }
+    .logo { font-size: 16px; }
+    .toc-btn, .back-top { right: 10px; width: 38px; height: 38px; font-size: 15px; }
+    .toc-panel { padding: 20px 16px; max-height: 70vh; }
+    .toc-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+    .kbd-hint { display: none; }
+    .focus-exit { top: auto; bottom: 80px; right: 10px; }
+  }
+  @media (max-width: 480px) {
+    .hero h1 { font-size: 26px; }
+    .hero-badge { font-size: 11px; padding: 4px 14px; }
+    .btn { padding: 10px 20px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<canvas id="particles"></canvas>
+
+<header>
+<div class="header-inner">
+  <a href="#" class="logo"><span class="logo-icon">R</span> Học Rust</a>
+  <div class="header-center">
+    <nav>
+      <a href="#why" class="nav-link">Why Rust?</a>
+      <a href="#basics" class="nav-link">Cơ bản</a>
+      <a href="#ownership" class="nav-link">Ownership</a>
+      <a href="#advanced" class="nav-link">Nâng cao</a>
+      <a href="#ecosystem" class="nav-link">Ecosystem</a>
+      <a href="#roadmap" class="nav-link">Lộ trình</a>
+    </nav>
+  </div>
+  <div class="header-actions">
+    <button class="icon-btn" onclick="toggleSearch()" title="Tìm kiếm (S)" aria-label="Search">🔍</button>
+    <button class="icon-btn" onclick="toggleTheme()" title="Đổi theme" aria-label="Toggle theme" id="themeBtn">🌙</button>
+  </div>
+</div>
+</header>
+
+<!-- SEARCH OVERLAY -->
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Tìm chủ đề... (gõ A-Z hoặc từ khóa)" autofocus>
+    <div class="search-results" id="searchResults"></div>
+    <div class="search-hint"><span>↑↓ điều hướng</span><span><kbd>Enter</kbd> mở</span><span><kbd>S</kbd> mở search</span></div>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-badge">🦀 <strong>Học Rust</strong> &nbsp;·&nbsp; Ngôn ngữ hệ thống hiện đại & an toàn</div>
+  <h1>Rust từ A đến Z</h1>
+  <p>Lộ trình học Rust toàn diện dành cho người mới bắt đầu — từ biến cơ bản đến async/await, macros, và hệ sinh thái.</p>
+  <div class="hero-actions">
+    <a href="#basics" class="btn btn-primary">Bắt đầu học →</a>
+    <a href="#roadmap" class="btn btn-secondary">Xem lộ trình</a>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">15+</div><div class="stat-label">Chủ đề</div></div>
+    <div class="stat"><div class="stat-num">50+</div><div class="stat-label">Ví dụ code</div></div>
+    <div class="stat"><div class="stat-num">A→Z</div><div class="stat-label">Từ cơ bản</div></div>
+  </div>
+</section>
+
+<section class="section reveal" id="why">
+  <div class="section-header">
+    <span class="section-tag c-ecosystem">✦ Giới thiệu</span>
+    <h2>Tại sao học Rust?</h2>
+    <p class="section-desc">Rust là ngôn ngữ được yêu thích nhất 9 năm liên tiếp trên Stack Overflow.</p>
+  </div>
+  <div class="card-grid card-grid-3">
+    <div class="card"><div class="card-icon">🔒</div><h3>An toàn bộ nhớ</h3><p>Ownership & Borrowing đảm bảo an toàn bộ nhớ <strong>tại compile time</strong> — không cần GC.</p></div>
+    <div class="card"><div class="card-icon">⚡</div><h3>Hiệu năng C-like</h3><p>Native code, zero-cost abstractions, kiểm soát tài nguyên ở mức thấp nhất.</p></div>
+    <div class="card"><div class="card-icon">🛠️</div><h3>Toolchain xuất sắc</h3><p><code>rustup</code>, <code>cargo</code>, <code>rustfmt</code>, <code>clippy</code> có sẵn.</p></div>
+    <div class="card"><div class="card-icon">🌐</div><h3>WebAssembly</h3><p>Rust là công dân hạng nhất của WebAssembly.</p></div>
+    <div class="card"><div class="card-icon">💼</div><h3>Cơ hội việc làm</h3><p>Blockchain, embedded, CLI, backend — Rust đang bùng nổ.</p></div>
+    <div class="card"><div class="card-icon">🤝</div><h3>Cộng đồng</h3><p>Cộng đồng thân thiện qua Discord, Reddit, forum.</p></div>
+  </div>
+</section>
+
+<section class="section reveal" id="basics">
+  <div class="section-header">
+    <span class="section-tag c-basics">● Cơ bản</span>
+    <h2>Rust Fundamentals (A–G)</h2>
+    <p class="section-desc">Nắm vững nền tảng: biến, kiểu dữ liệu, hàm, control flow.</p>
+  </div>
+
+  <div class="topic" data-letter="a"><div class="topic-header"><h3 id="topic-a"><span class="num">A</span> Cài đặt & Hello World</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="a" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('a')" title="Chỉ xem topic này">🔍 Focus</button></div>
+    <div class="card-grid card-grid-2">
+      <div class="card"><h3>Cài đặt Rust</h3><p><code>rustup</code> là công cụ chính thức:</p><div class="code-block"><div class="code-header"><span>Bash</span><div class="code-actions"><button class="code-btn" onclick="copyCode(this)">Copy</button><button class="code-btn" onclick="runPlayground(this)" data-code="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh">▶ Run</button></div></div><pre>curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh</pre></div><p style="margin-top:8px">Kiểm tra: <code>rustc --version && cargo --version</code></p></div>
+      <div class="card"><h3>Hello World</h3><p>Tạo project mới:</p><div class="code-block"><div class="code-header"><span>Bash</span><div class="code-actions"><button class="code-btn" onclick="copyCode(this)">Copy</button></div></div><pre>cargo new hello_rust
+cd hello_rust
+cargo run</pre></div></div>
+    </div>
+    <div class="code-block"><div class="code-header"><span>🦀 src/main.rs</span><div class="code-actions"><button class="code-btn" onclick="copyCode(this)">Copy</button><button class="code-btn" onclick="runPlayground(this)" data-code='fn main() {\n    println!("Hello, Rust! 🦀");\n}'>▶ Run</button></div></div><pre><span class="kw">fn</span> <span class="fn">main</span>() { <span class="macro">println!</span>(<span class="str">"Hello, Rust! 🦀"</span>); }</pre></div>
+  </div>
+
+  <div class="topic" data-letter="b"><div class="topic-header"><h3 id="topic-b"><span class="num">B</span> Biến & Mutability</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="b" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('b')">🔍 Focus</button></div>
+    <div class="code-block"><div class="code-header"><span>🦀 Variables</span><div class="code-actions"><button class="code-btn" onclick="copyCode(this)">Copy</button><button class="code-btn" onclick="runPlayground(this)" data-code='let x = 5;\nlet mut y = 10;\ny = 20;\nprintln!("x={}, y={}", x, y);'>▶ Run</button></div></div><pre><span class="kw">let</span> x = <span class="num">5</span>;          <span class="cm">// immutable</span>
+<span class="kw">let</span> <span class="kw">mut</span> y = <span class="num">10</span>;      <span class="cm">// mutable</span>
+y = <span class="num">20</span>;
+<span class="cm">// Shadowing</span>
+<span class="kw">let</span> z = <span class="num">5</span>;
+<span class="kw">let</span> z = z + <span class="num">1</span>;
+<span class="kw">let</span> z = <span class="str">"hello"</span>;
+<span class="kw">const</span> <span class="fn">MAX</span>: <span class="ty">u32</span> = <span class="num">100_000</span>;</pre></div>
+  </div>
+
+  <div class="topic" data-letter="c"><div class="topic-header"><h3 id="topic-c"><span class="num">C</span> Kiểu dữ liệu</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="c" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('c')">🔍 Focus</button></div>
+    <div class="card-grid card-grid-3">
+      <div class="card"><h3>Scalar</h3><ul><li><code>i8..i64</code> — số nguyên</li><li><code>u8..u64</code> — không dấu</li><li><code>f32, f64</code> — số thực</li><li><code>bool</code>, <code>char</code></li></ul></div>
+      <div class="card"><h3>Compound</h3><ul><li><code>(i32, f64, char)</code> — Tuple</li><li><code>[i32; 3]</code> — Array</li><li><code>&str</code>, <code>String</code></li></ul></div>
+      <div class="card"><h3>Inference</h3><div class="code-block" style="margin:8px 0 0"><pre><span class="kw">let</span> guess: <span class="ty">u32</span> = <span class="str">"42"</span>.<span class="fn">parse</span>().<span class="fn">expect</span>(<span class="str">"not a number"</span>);</pre></div></div>
+    </div>
+  </div>
+
+  <div class="topic" data-letter="d"><div class="topic-header"><h3 id="topic-d"><span class="num">D</span> Hàm (Functions)</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="d" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('d')">🔍 Focus</button></div>
+    <div class="code-block"><div class="code-header"><span>🦀 Functions</span><div class="code-actions"><button class="code-btn" onclick="copyCode(this)">Copy</button><button class="code-btn" onclick="runPlayground(this)" data-code='fn add(x: i32, y: i32) -> i32 { x + y }\nfn main() {\n    let r = add(5, 3);\n    println!("{}", r);\n    let sq = |n: i32| n * n;\n    println!("{}", sq(4));\n}'>▶ Run</button></div></div><pre><span class="kw">fn</span> <span class="fn">add</span>(x: <span class="ty">i32</span>, y: <span class="ty">i32</span>) -> <span class="ty">i32</span> { x + y }
+<span class="kw">fn</span> <span class="fn">main</span>() {
+    <span class="kw">let</span> r = <span class="fn">add</span>(<span class="num">5</span>, <span class="num">3</span>);
+    <span class="macro">println!</span>(<span class="str">"{}"</span>, r);
+    <span class="kw">let</span> sq = |n: <span class="ty">i32</span>| n * n;
+    <span class="macro">println!</span>(<span class="str">"{}"</span>, <span class="fn">sq</span>(<span class="num">4</span>));
+}</pre></div>
+  </div>
+
+  <div class="topic" data-letter="e"><div class="topic-header"><h3 id="topic-e"><span class="num">E</span> Control Flow</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="e" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('e')">🔍 Focus</button></div>
+    <div class="card-grid card-grid-2">
+      <div class="card"><h3>if / else</h3><div class="code-block" style="margin:8px 0"><pre><span class="kw">let</span> n = <span class="num">7</span>;
+<span class="kw">if</span> n % <span class="num">2</span> == <span class="num">0</span> { <span class="macro">println!</span>(<span class="str">"even"</span>); }
+<span class="kw">else</span> { <span class="macro">println!</span>(<span class="str">"odd"</span>); }
+
+<span class="cm">// if là expression</span>
+<span class="kw">let</span> s = <span class="kw">if</span> n > <span class="num">0</span> { <span class="str">"pos"</span> } <span class="kw">else</span> { <span class="str">"non-pos"</span> };</pre></div></div>
+      <div class="card"><h3>Loop / For</h3><div class="code-block" style="margin:8px 0"><pre><span class="kw">let</span> r = <span class="kw">loop</span> { <span class="kw">break</span> <span class="num">42</span>; };
+<span class="kw">while</span> n > <span class="num">0</span> { n -= <span class="num">1</span>; }
+<span class="kw">for</span> i <span class="kw">in</span> <span class="num">0</span>..<span class="num">5</span> { ... }
+<span class="kw">for</span> item <span class="kw">in</span> &vec { ... }</pre></div></div>
+    </div>
+  </div>
+
+  <div class="topic" data-letter="f"><div class="topic-header"><h3 id="topic-f"><span class="num">F</span> Pattern Matching</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="f" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('f')">🔍 Focus</button></div>
+    <div class="code-block"><div class="code-header"><span>🦀 match</span><div class="code-actions"><button class="code-btn" onclick="copyCode(this)">Copy</button><button class="code-btn" onclick="runPlayground(this)" data-code='enum Coin { Penny, Nickel, Dime, Quarter }\nfn value(c: Coin) -> u8 {\n    match c {\n        Coin::Penny => 1,\n        Coin::Nickel => 5,\n        Coin::Dime => 10,\n        Coin::Quarter => 25,\n    }\n}\nfn main() {\n    println!("{}", value(Coin::Quarter));\n}'>▶ Run</button></div></div><pre><span class="kw">enum</span> <span class="ty">Coin</span> { <span class="fn">Penny</span>, <span class="fn">Nickel</span>, <span class="fn">Dime</span>, <span class="fn">Quarter</span> }
+<span class="kw">fn</span> <span class="fn">value</span>(c: <span class="ty">Coin</span>) -> <span class="ty">u8</span> {
+    <span class="kw">match</span> c {
+        <span class="ty">Coin</span>::<span class="fn">Penny</span> => <span class="num">1</span>,
+        <span class="ty">Coin</span>::<span class="fn">Nickel</span> => <span class="num">5</span>,
+        <span class="ty">Coin</span>::<span class="fn">Dime</span> => <span class="num">10</span>,
+        <span class="ty">Coin</span>::<span class="fn">Quarter</span> => <span class="num">25</span>,
+    }
+}</pre></div>
+  </div>
+
+  <div class="topic" data-letter="g"><div class="topic-header"><h3 id="topic-g"><span class="num">G</span> Structs & Enums</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="g" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('g')">🔍 Focus</button></div>
+    <div class="card-grid card-grid-2">
+      <div class="card"><h3>Struct</h3><div class="code-block" style="margin:8px 0"><pre><span class="kw">struct</span> <span class="ty">User</span> { username: <span class="ty">String</span>, email: <span class="ty">String</span>, active: <span class="ty">bool</span> }
+<span class="kw">let</span> u = <span class="ty">User</span> {
+    username: <span class="ty">String</span>::<span class="fn">from</span>(<span class="str">"alice"</span>),
+    email: <span class="ty">String</span>::<span class="fn">from</span>(<span class="str">"a@b.com"</span>), active: <span class="kw">true</span>,
+};</pre></div></div>
+      <div class="card"><h3>Enum</h3><div class="code-block" style="margin:8px 0"><pre><span class="kw">enum</span> <span class="ty">Message</span> {
+    <span class="fn">Quit</span>, <span class="fn">Move</span> { x: <span class="ty">i32</span>, y: <span class="ty">i32</span> },
+    <span class="fn">Write</span>(<span class="ty">String</span>), <span class="fn">ChangeColor</span>(<span class="ty">u8</span>,<span class="ty">u8</span>,<span class="ty">u8</span>),
+}
+<span class="kw">impl</span> <span class="ty">Message</span> { <span class="kw">fn</span> <span class="fn">call</span>(&<span class="kw">self</span>) { ... } }</pre></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section reveal" id="ownership">
+  <div class="section-header">
+    <span class="section-tag c-ownership">◆ Quan trọng nhất</span>
+    <h2>Ownership & Borrowing (H–L)</h2>
+    <p class="section-desc">Đây là tính năng độc đáo nhất của Rust — hiểu được Ownership là hiểu được Rust.</p>
+  </div>
+
+  <div class="topic" data-letter="h"><div class="topic-header"><h3 id="topic-h"><span class="num">H</span> Ownership</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="h" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('h')">🔍 Focus</button></div>
+    <div class="card-grid card-grid-2" style="margin-bottom:12px">
+      <div class="card" style="border-left:2px solid var(--rust)"><strong style="color:var(--rust)">Ba quy tắc:</strong><ol style="margin-top:8px;padding-left:18px;color:var(--text2);font-size:13px"><li>Mỗi giá trị có <strong style="color:var(--text)">một owner</strong></li><li>Khi owner ra khỏi scope, giá trị bị <strong style="color:var(--text)">drop</strong></li><li>Có thể <strong style="color:var(--text)">borrow</strong> thay vì chuyển</li></ol></div>
+      <div class="card"><h3>Move vs Clone</h3><div class="code-block" style="margin:8px 0"><pre><span class="kw">let</span> s1 = <span class="ty">String</span>::<span class="fn">from</span>(<span class="str">"hello"</span>);
+<span class="kw">let</span> s2 = s1;  <span class="cm">// MOVE</span>
+<span class="kw">let</span> s3 = s2.<span class="fn">clone</span>(); <span class="cm">// deep copy</span></pre></div></div>
+    </div>
+  </div>
+
+  <div class="topic" data-letter="i"><div class="topic-header"><h3 id="topic-i"><span class="num">I</span> References & Borrowing</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="i" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('i')">🔍 Focus</button></div>
+    <div class="code-block"><div class="code-header"><span>🦀 Borrowing</span><div class="code-actions"><button class="code-btn" onclick="copyCode(this)">Copy</button><button class="code-btn" onclick="runPlayground(this)" data-code='fn calc_len(s: &String) -> usize { s.len() }\nfn main() {\n    let s1 = String::from("hello");\n    let len = calc_len(&s1);\n    println!("{}: {}", s1, len);\n}'>▶ Run</button></div></div><pre><span class="kw">fn</span> <span class="fn">calc_len</span>(s: &<span class="ty">String</span>) -> <span class="ty">usize</span> { s.<span class="fn">len</span>() }
+<span class="kw">let</span> s1 = <span class="ty">String</span>::<span class="fn">from</span>(<span class="str">"hello"</span>);
+<span class="kw">let</span> len = <span class="fn">calc_len</span>(&s1);
+<span class="macro">println!</span>(<span class="str">"{}: {}"</span>, s1, len);
+
+<span class="cm">// Mutable ref — chỉ 1 lần</span>
+<span class="kw">let</span> <span class="kw">mut</span> s = <span class="ty">String</span>::<span class="fn">from</span>(<span class="str">"hi"</span>);
+<span class="kw">let</span> r1 = &<span class="kw">mut</span> s;
+<span class="cm">// let r2 = &mut s; // LỖI!</span></pre></div>
+  </div>
+
+  <div class="topic" data-letter="j"><div class="topic-header"><h3 id="topic-j"><span class="num">J</span> Slices</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="j" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('j')">🔍 Focus</button></div>
+    <div class="code-block"><div class="code-header"><span>🦀 Slices</span><div class="code-actions"><button class="code-btn" onclick="copyCode(this)">Copy</button><button class="code-btn" onclick="runPlayground(this)" data-code='fn first_word(s: &str) -> &str {\n    let bytes = s.as_bytes();\n    for (i, &item) in bytes.iter().enumerate() {\n        if item == b\' \' { return &s[0..i]; }\n    }\n    &s[..]\n}\nfn main() {\n    let w = first_word("hello world");\n    println!("{}", w);\n}'>▶ Run</button></div></div><pre><span class="kw">fn</span> <span class="fn">first_word</span>(s: &<span class="ty">str</span>) -> &<span class="ty">str</span> {
+    <span class="kw">for</span> (i, &item) <span class="kw">in</span> s.<span class="fn">as_bytes</span>().<span class="fn">iter</span>().<span class="fn">enumerate</span>() {
+        <span class="kw">if</span> item == <span class="num">b' '</span> { <span class="kw">return</span> &s[<span class="num">0</span>..i]; }
+    } &s[..]
+}</pre></div>
+  </div>
+
+  <div class="topic" data-letter="k"><div class="topic-header"><h3 id="topic-k"><span class="num">K</span> Lifetime</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="k" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('k')">🔍 Focus</button></div>
+    <div class="code-block"><div class="code-header"><span>🦀 Lifetime</span><div class="code-actions"><button class="code-btn" onclick="copyCode(this)">Copy</button></div></div><pre><span class="kw">fn</span> <span class="fn">longest</span>&lt;'a&gt;(x: &'a <span class="ty">str</span>, y: &'a <span class="ty">str</span>) -> &'a <span class="ty">str</span> {
+    <span class="kw">if</span> x.<span class="fn">len</span>() > y.<span class="fn">len</span>() { x } <span class="kw">else</span> { y }
+}
+<span class="kw">struct</span> <span class="ty">Excerpt</span>&lt;'a&gt; { part: &'a <span class="ty">str</span> }</pre></div>
+  </div>
+
+  <div class="topic" data-letter="l"><div class="topic-header"><h3 id="topic-l"><span class="num">L</span> Error Handling</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="l" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('l')">🔍 Focus</button></div>
+    <div class="card-grid card-grid-2">
+      <div class="card"><h3>Result&lt;T, E&gt;</h3><div class="code-block" style="margin:8px 0"><pre><span class="kw">fn</span> <span class="fn">read_file</span>() -> <span class="ty">Result</span>&lt;<span class="ty">String</span>, std::io::<span class="ty">Error</span>&gt; {
+    <span class="kw">let</span> <span class="kw">mut</span> f = <span class="ty">File</span>::<span class="fn">open</span>(<span class="str">"hello.txt"</span>)?;
+    <span class="kw">let</span> <span class="kw">mut</span> s = <span class="ty">String</span>::<span class="fn">new</span>();
+    f.<span class="fn">read_to_string</span>(&<span class="kw">mut</span> s)?; <span class="ty">Ok</span>(s)
+}</pre></div></div>
+      <div class="card"><h3>Option&lt;T&gt;</h3><div class="code-block" style="margin:8px 0"><pre><span class="kw">fn</span> <span class="fn">find</span>(list: &[<span class="ty">i32</span>], t: <span class="ty">i32</span>) -> <span class="ty">Option</span>&lt;<span class="ty">usize</span>&gt; {
+    <span class="kw">for</span> (i, &v) <span class="kw">in</span> list.<span class="fn">iter</span>().<span class="fn">enumerate</span>() {
+        <span class="kw">if</span> v == t { <span class="kw">return</span> <span class="ty">Some</span>(i); }
+    } <span class="ty">None</span>
+}</pre></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section reveal" id="advanced">
+  <div class="section-header">
+    <span class="section-tag c-advanced">▲ Nâng cao</span>
+    <h2>Rust Advanced (M–S)</h2>
+    <p class="section-desc">Generic, Traits, Closures, Iterators, Smart Pointers, Concurrency.</p>
+  </div>
+
+  <div class="topic" data-letter="m"><div class="topic-header"><h3 id="topic-m"><span class="num">M</span> Generics & Traits</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="m" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('m')">🔍 Focus</button></div>
+    <div class="card-grid card-grid-2">
+      <div class="card"><h3>Generics</h3><div class="code-block" style="margin:8px 0"><pre><span class="kw">struct</span> <span class="ty">Point</span>&lt;T&gt; { x: T, y: T }
+<span class="kw">impl</span>&lt;T&gt; <span class="ty">Point</span>&lt;T&gt; { <span class="kw">fn</span> <span class="fn">x</span>(&<span class="kw">self</span>) -> &T { &<span class="kw">self</span>.x } }
+<span class="kw">fn</span> <span class="fn">largest</span>&lt;T: <span class="ty">PartialOrd</span>&gt;(l: &[T]) -> &T { ... }</pre></div></div>
+      <div class="card"><h3>Traits</h3><div class="code-block" style="margin:8px 0"><pre><span class="kw">trait</span> <span class="ty">Summary</span> { <span class="kw">fn</span> <span class="fn">summarize</span>(&<span class="kw">self</span>) -> <span class="ty">String</span>; }
+<span class="kw">impl</span> <span class="ty">Summary</span> <span class="kw">for</span> <span class="ty">Article</span> {
+    <span class="kw">fn</span> <span class="fn">summarize</span>(&<span class="kw">self</span>) -> <span class="ty">String</span> {
+        <span class="macro">format!</span>(<span class="str">"{} by {}"</span>, <span class="kw">self</span>.headline, <span class="kw">self</span>.author)
+    }
+}</pre></div></div>
+    </div>
+  </div>
+
+  <div class="topic" data-letter="n"><div class="topic-header"><h3 id="topic-n"><span class="num">N</span> Closures & Iterators</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="n" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('n')">🔍 Focus</button></div>
+    <div class="code-block"><div class="code-header"><span>🦀 Closures & Iterators</span><div class="code-actions"><button class="code-btn" onclick="copyCode(this)">Copy</button><button class="code-btn" onclick="runPlayground(this)" data-code='fn main() {\n    let add_one = |x| x + 1;\n    println!("{}", add_one(5));\n    let numbers = vec![1,2,3,4,5];\n    let doubled: Vec<i32> = numbers.iter().map(|x| x*2).filter(|x| x>5).collect();\n    println!("{:?}", doubled);\n}'>▶ Run</button></div></div><pre><span class="kw">let</span> add_one = |x| x + <span class="num">1</span>;
+<span class="kw">let</span> doubled: <span class="ty">Vec</span>&lt;<span class="ty">i32</span>&gt; = numbers
+    .<span class="fn">iter</span>().<span class="fn">map</span>(|x| x*<span class="num">2</span>).<span class="fn">filter</span>(|x| x><span class="num">5</span>).<span class="fn">collect</span>();</pre></div>
+  </div>
+
+  <div class="topic" data-letter="o"><div class="topic-header"><h3 id="topic-o"><span class="num">O</span> Smart Pointers</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="o" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('o')">🔍 Focus</button></div>
+    <div class="card-grid card-grid-3">
+      <div class="card"><h3><code>Box&lt;T&gt;</code></h3><div class="code-block" style="margin:8px 0"><pre><span class="kw">let</span> b = <span class="ty">Box</span>::<span class="fn">new</span>(<span class="num">5</span>);</pre></div></div>
+      <div class="card"><h3><code>Rc&lt;T&gt;</code></h3><div class="code-block" style="margin:8px 0"><pre><span class="kw">let</span> a = <span class="ty">Rc</span>::<span class="fn">new</span>(<span class="num">5</span>);
+<span class="kw">let</span> b = <span class="ty">Rc</span>::<span class="fn">clone</span>(&a);</pre></div></div>
+      <div class="card"><h3><code>RefCell&lt;T&gt;</code></h3><div class="code-block" style="margin:8px 0"><pre><span class="kw">let</span> c = <span class="ty">RefCell</span>::<span class="fn">new</span>(<span class="num">5</span>);
+*c.<span class="fn">borrow_mut</span>() = <span class="num">10</span>;</pre></div></div>
+    </div>
+  </div>
+
+  <div class="topic" data-letter="p"><div class="topic-header"><h3 id="topic-p"><span class="num">P</span> Concurrency</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="p" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('p')">🔍 Focus</button></div>
+    <div class="code-block"><div class="code-header"><span>🦀 Concurrency</span><div class="code-actions"><button class="code-btn" onclick="copyCode(this)">Copy</button></div></div><pre><span class="kw">use</span> std::thread;
+<span class="kw">let</span> h = thread::<span class="fn">spawn</span>(<span class="kw">move</span> || { <span class="macro">println!</span>(<span class="str">"hi"</span>); });
+h.<span class="fn">join</span>().<span class="fn">unwrap</span>();
+
+<span class="cm">// Shared state: Arc&lt;Mutex&lt;T&gt;&gt;</span>
+<span class="kw">let</span> counter = <span class="ty">Arc</span>::<span class="fn">new</span>(<span class="ty">Mutex</span>::<span class="fn">new</span>(<span class="num">0</span>));</pre></div>
+  </div>
+
+  <div class="topic" data-letter="q"><div class="topic-header"><h3 id="topic-q"><span class="num">Q</span> Async/Await</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="q" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('q')">🔍 Focus</button></div>
+    <div class="code-block"><div class="code-header"><span>🦀 Async (tokio)</span><div class="code-actions"><button class="code-btn" onclick="copyCode(this)">Copy</button></div></div><pre><span class="cm">// tokio = { version = "1", features = ["full"] }</span>
+<span class="kw">use</span> tokio::time::{sleep, <span class="ty">Duration</span>};
+
+<span class="kw">async</span> <span class="kw">fn</span> <span class="fn">hello</span>() -> &'static <span class="ty">str</span> {
+    <span class="fn">sleep</span>(<span class="ty">Duration</span>::<span class="fn">from_secs</span>(<span class="num">1</span>)).<span class="kw">await</span>;
+    <span class="str">"Hello async!"</span>
+}
+
+<span class="preproc">#[tokio::main]</span>
+<span class="kw">async</span> <span class="kw">fn</span> <span class="fn">main</span>() {
+    <span class="macro">println!</span>(<span class="str">"{}"</span>, <span class="fn">hello</span>().<span class="kw">await</span>);
+}</pre></div>
+  </div>
+
+  <div class="topic" data-letter="r"><div class="topic-header"><h3 id="topic-r"><span class="num">R</span> Macros</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="r" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('r')">🔍 Focus</button></div>
+    <div class="card-grid card-grid-2">
+      <div class="card"><h3>Declarative</h3><div class="code-block" style="margin:8px 0"><pre><span class="macro">macro_rules!</span> say_hello {
+    () => { <span class="macro">println!</span>(<span class="str">"Hello!"</span>); };
+    ($n:expr) => { <span class="macro">println!</span>(<span class="str">"Hello {}!"</span>, $n); };
+}
+<span class="fn">say_hello!</span>(<span class="str">"Alice"</span>);</pre></div></div>
+      <div class="card"><h3>Derive</h3><div class="code-block" style="margin:8px 0"><pre><span class="preproc">#[derive(Debug, Clone, PartialEq)]</span>
+<span class="kw">struct</span> <span class="ty">Point</span> { x: <span class="ty">i32</span>, y: <span class="ty">i32</span> }</pre></div></div>
+    </div>
+  </div>
+
+  <div class="topic" data-letter="s"><div class="topic-header"><h3 id="topic-s"><span class="num">S</span> Testing</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="s" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('s')">🔍 Focus</button></div>
+    <div class="code-block"><div class="code-header"><span>🦀 Tests</span><div class="code-actions"><button class="code-btn" onclick="copyCode(this)">Copy</button></div></div><pre><span class="preproc">#[cfg(test)]</span>
+<span class="kw">mod</span> tests {
+    <span class="kw">use</span> <span class="kw">super</span>::*;
+    <span class="preproc">#[test]</span>
+    <span class="kw">fn</span> <span class="fn">test_add</span>() { <span class="macro">assert_eq!</span>(<span class="fn">add</span>(<span class="num">2</span>,<span class="num">2</span>), <span class="num">4</span>); }
+    <span class="preproc">#[test</span>]
+    <span class="preproc">#[should_panic]</span>
+    <span class="kw">fn</span> <span class="fn">test_panic</span>() { <span class="fn">panic!</span>(<span class="str">"oops"</span>); }
+}</pre></div>
+  </div>
+</section>
+
+<section class="section reveal" id="ecosystem">
+  <div class="section-header">
+    <span class="section-tag c-ecosystem">■ Ecosystem</span>
+    <h2>Ecosystem & Cargo (T–Z)</h2>
+    <p class="section-desc">Cargo, Crates.io, thư viện phổ biến, dự án thực tế.</p>
+  </div>
+
+  <div class="topic" data-letter="t"><div class="topic-header"><h3 id="topic-t"><span class="num">T</span> Cargo</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="t" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('t')">🔍 Focus</button></div>
+    <div class="card-grid card-grid-2">
+      <div class="card"><h3>Cargo commands</h3><ul><li><code>cargo new</code> — tạo project</li><li><code>cargo build</code> — biên dịch</li><li><code>cargo build --release</code></li><li><code>cargo run</code> — build + chạy</li><li><code>cargo check</code> — kiểm tra nhanh</li><li><code>cargo test</code> — chạy test</li><li><code>cargo doc --open</code></li></ul></div>
+      <div class="card"><h3>Cargo.toml</h3><div class="code-block" style="margin:8px 0"><pre>[package]
+name = "my_project"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }</pre></div></div>
+    </div>
+  </div>
+
+  <div class="topic" data-letter="u"><div class="topic-header"><h3 id="topic-u"><span class="num">U</span> Crates phổ biến</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="u" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('u')">🔍 Focus</button></div>
+    <div class="card-grid card-grid-3">
+      <div class="card"><div class="card-icon">🌐</div><h3>Web</h3><p><code>axum</code>, <code>actix-web</code></p></div>
+      <div class="card"><div class="card-icon">🗄️</div><h3>DB</h3><p><code>diesel</code>, <code>sqlx</code></p></div>
+      <div class="card"><div class="card-icon">🔧</div><h3>CLI</h3><p><code>clap</code>, <code>serde</code></p></div>
+      <div class="card"><div class="card-icon">⚡</div><h3>Async</h3><p><code>tokio</code></p></div>
+      <div class="card"><div class="card-icon">🖥️</div><h3>Embedded</h3><p><code>esp-rs</code></p></div>
+      <div class="card"><div class="card-icon">🦀</div><h3>Testing</h3><p><code>rstest</code></p></div>
+    </div>
+  </div>
+
+  <div class="topic" data-letter="v"><div class="topic-header"><h3 id="topic-v"><span class="num">V</span> Công cụ</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="v" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('v')">🔍 Focus</button></div>
+    <div class="card-grid card-grid-3">
+      <div class="card"><h3><code>rustfmt</code></h3><p><code>cargo fmt</code></p></div>
+      <div class="card"><h3><code>clippy</code></h3><p><code>cargo clippy</code></p></div>
+      <div class="card"><h3><code>rust-analyzer</code></h3><p>LSP server</p></div>
+    </div>
+  </div>
+
+  <div class="topic" data-letter="w"><div class="topic-header"><h3 id="topic-w"><span class="num">W</span> Dự án</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="w" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('w')">🔍 Focus</button></div>
+    <div class="card-grid card-grid-2">
+      <div class="card"><h3>🏁 Beginner</h3><ul><li>CLI calculator</li><li>File I/O tool</li><li>Todo list CLI</li><li>Number guessing game</li></ul></div>
+      <div class="card"><h3>🚀 Intermediate</h3><ul><li>HTTP server</li><li>CLI with clap</li><li>Web scraper</li><li>Chat app WebSocket</li></ul></div>
+    </div>
+  </div>
+
+  <div class="topic" data-letter="x"><div class="topic-header"><h3 id="topic-x"><span class="num">X</span> Tài nguyên</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="x" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('x')">🔍 Focus</button></div>
+    <div class="card-grid card-grid-3">
+      <div class="card"><h3>📘 Sách</h3><ul><li><a href="https://doc.rust-lang.org/book/" style="color:var(--accent)">The Rust Book</a></li><li><a href="https://doc.rust-lang.org/rust-by-example/" style="color:var(--accent)">Rust by Example</a></li></ul></div>
+      <div class="card"><h3>🎓 Khóa học</h3><ul><li><a href="https://rustlings.cool/" style="color:var(--accent)">Rustlings</a></li><li>Exercism</li></ul></div>
+      <div class="card"><h3>🌍 Cộng đồng</h3><ul><li>r/rust</li><li>Rust Discord</li></ul></div>
+    </div>
+  </div>
+
+  <div class="topic" data-letter="y"><div class="topic-header"><h3 id="topic-y"><span class="num">Y</span> Tips</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="y" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('y')">🔍 Focus</button></div>
+    <div class="code-block"><div class="code-header"><span>💡 Rust Tips</span><div class="code-actions"><button class="code-btn" onclick="copyCode(this)">Copy</button></div></div><pre><span class="cm">// 1. Dùng ? thay vì unwrap()</span>
+<span class="kw">let</span> data = file.<span class="fn">read_to_string</span>()?;
+
+<span class="cm">// 2. Prefer iterators</span>
+vec.<span class="fn">iter</span>().<span class="fn">filter</span>(|x| x><span class="num">0</span>).<span class="fn">map</span>(|x| x*<span class="num">2</span>).<span class="fn">collect</span>();
+
+<span class="cm">// 3. Dùng derive(Debug, Clone)</span>
+<span class="preproc">#[derive(Debug, Clone)]</span>
+
+<span class="cm">// 4. cargo clippy -- -D warnings</span>
+
+<span class="cm">// 5. Prefer &str hơn &String</span>
+<span class="kw">fn</span> <span class="fn">greet</span>(name: &<span class="ty">str</span>) { ... }</pre></div>
+  </div>
+
+  <div class="topic" data-letter="z"><div class="topic-header"><h3 id="topic-z"><span class="num">Z</span> Bước tiếp theo</h3><div class="topic-check" onclick="toggleTopic(this)" data-topic="z" title="Đánh dấu đã học">✓</div><button class="topic-focus-btn" onclick="focusTopic('z')">🔍 Focus</button></div>
+    <div class="card-grid card-grid-2">
+      <div class="card" style="border-left:2px solid var(--accent2)"><h3>🦀 Rustacean</h3><ul><li>Viết crate riêng</li><li>Đóng góp open source</li><li>Rust conferences</li></ul></div>
+      <div class="card" style="border-left:2px solid var(--rust-light)"><h3>🔭 Chuyên sâu</h3><ul><li>Unsafe Rust & FFI</li><li>Embedded (no_std)</li><li>Rust WebAssembly</li><li>Compiler & proc-macros</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="section reveal" id="roadmap">
+  <div class="section-header">
+    <span class="section-tag c-tools">✦ Lộ trình</span>
+    <h2>Lộ trình học Rust 90 ngày</h2>
+    <p class="section-desc">Kế hoạch từ beginner đến intermediate. <span id="progressCount" style="color:var(--accent2)">0/26</span> chủ đề đã học.</p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Tiến trình tổng</span><span id="progressText">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="timeline">
+    <div class="timeline-item"><div class="phase">Tuần 1-2</div><h3>🟢 Khởi động</h3><p>Cài đặt Rust, Cargo, biến, kiểu, hàm, control flow, match.</p><div class="tags"><span>cài đặt</span><span>cargo</span><span>cú pháp</span></div></div>
+    <div class="timeline-item"><div class="phase">Tuần 3-4</div><h3>🔵 Ownership & Borrowing</h3><p>Ownership, References, Slices, Lifetime cơ bản.</p><div class="tags"><span>ownership</span><span>borrowing</span><span>lifetime</span></div></div>
+    <div class="timeline-item"><div class="phase">Tuần 5-6</div><h3>🟣 Struct, Enum, Pattern Matching</h3><p>Struct, enum, method impl, Option/Result, error handling.</p><div class="tags"><span>struct</span><span>enum</span><span>error handling</span></div></div>
+    <div class="timeline-item"><div class="phase">Tuần 7-8</div><h3>🟡 Generics, Traits, Collections</h3><p>Generic types, Traits, Vec, HashMap, Closures.</p><div class="tags"><span>generics</span><span>traits</span><span>collections</span></div></div>
+    <div class="timeline-item"><div class="phase">Tuần 9-10</div><h3>🟠 Dự án đầu tay</h3><p>CLI tool với clap, serde, file I/O.</p><div class="tags"><span>cli</span><span>serde</span><span>project</span></div></div>
+    <div class="timeline-item"><div class="phase">Tuần 11-12</div><h3>🔴 Nâng cao</h3><p>Smart pointers, Concurrency, async/await, Testing, Macros.</p><div class="tags"><span>async</span><span>concurrency</span><span>testing</span></div></div>
+  </div>
+</section>
+
+<!-- TOC BUTTON -->
+<div class="toc-btn" id="tocBtn" onclick="toggleTOC()">
+  ☰<span class="badge">26</span>
+  <span class="label">Mục lục A–Z</span>
+</div>
+
+<!-- TOC OVERLAY -->
+<div class="toc-overlay" id="tocOverlay">
+  <div class="toc-panel">
+    <div class="toc-close" onclick="toggleTOC()">✕</div>
+    <h2>📖 Mục lục</h2>
+    <p>26 chủ đề — tick ✓ = đã học <span id="tocProgressLabel" style="color:var(--text2);float:right">0/26</span></p>
+    <div class="toc-progress"><div class="toc-progress-fill" id="tocProgressFill"></div></div>
+    <div style="height:12px"></div>
+    <div class="toc-section">
+      <div class="toc-section-header">A–G · Cơ bản</div>
+      <div class="toc-grid">
+        <a class="toc-item" href="#topic-a"><span class="toc-letter">A</span>Cài đặt</a>
+        <a class="toc-item" href="#topic-b"><span class="toc-letter">B</span>Biến</a>
+        <a class="toc-item" href="#topic-c"><span class="toc-letter">C</span>Kiểu dữ liệu</a>
+        <a class="toc-item" href="#topic-d"><span class="toc-letter">D</span>Hàm</a>
+        <a class="toc-item" href="#topic-e"><span class="toc-letter">E</span>Control Flow</a>
+        <a class="toc-item" href="#topic-f"><span class="toc-letter">F</span>Match</a>
+        <a class="toc-item" href="#topic-g"><span class="toc-letter">G</span>Struct & Enum</a>
+      </div>
+    </div>
+    <div class="toc-section">
+      <div class="toc-section-header">H–L · Ownership</div>
+      <div class="toc-grid">
+        <a class="toc-item" href="#topic-h"><span class="toc-letter">H</span>Ownership</a>
+        <a class="toc-item" href="#topic-i"><span class="toc-letter">I</span>Borrowing</a>
+        <a class="toc-item" href="#topic-j"><span class="toc-letter">J</span>Slices</a>
+        <a class="toc-item" href="#topic-k"><span class="toc-letter">K</span>Lifetime</a>
+        <a class="toc-item" href="#topic-l"><span class="toc-letter">L</span>Error Handling</a>
+      </div>
+    </div>
+    <div class="toc-section">
+      <div class="toc-section-header">M–S · Nâng cao</div>
+      <div class="toc-grid">
+        <a class="toc-item" href="#topic-m"><span class="toc-letter">M</span>Generics</a>
+        <a class="toc-item" href="#topic-n"><span class="toc-letter">N</span>Closures</a>
+        <a class="toc-item" href="#topic-o"><span class="toc-letter">O</span>Smart Ptr</a>
+        <a class="toc-item" href="#topic-p"><span class="toc-letter">P</span>Concurrency</a>
+        <a class="toc-item" href="#topic-q"><span class="toc-letter">Q</span>Async</a>
+        <a class="toc-item" href="#topic-r"><span class="toc-letter">R</span>Macros</a>
+        <a class="toc-item" href="#topic-s"><span class="toc-letter">S</span>Testing</a>
+      </div>
+    </div>
+    <div class="toc-section">
+      <div class="toc-section-header">T–Z · Ecosystem</div>
+      <div class="toc-grid">
+        <a class="toc-item" href="#topic-t"><span class="toc-letter">T</span>Cargo</a>
+        <a class="toc-item" href="#topic-u"><span class="toc-letter">U</span>Crates</a>
+        <a class="toc-item" href="#topic-v"><span class="toc-letter">V</span>Công cụ</a>
+        <a class="toc-item" href="#topic-w"><span class="toc-letter">W</span>Dự án</a>
+        <a class="toc-item" href="#topic-x"><span class="toc-letter">X</span>Tài nguyên</a>
+        <a class="toc-item" href="#topic-y"><span class="toc-letter">Y</span>Tips</a>
+        <a class="toc-item" href="#topic-z"><span class="toc-letter">Z</span>Tiếp theo</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BACK TO TOP -->
+<div class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Lên đầu trang">↑</div>
+
+<!-- KEYBOARD HINT -->
+<div class="kbd-hint show" id="kbdHint">
+  <span><kbd>S</kbd> Search</span>
+  <span><kbd>T</kbd> Mục lục</span>
+  <span><kbd>Esc</kbd> Đóng</span>
+  <span><kbd>F</kbd> Focus mode</span>
+</div>
+
+<!-- FOCUS EXIT -->
+<div class="focus-exit" id="focusExit" onclick="exitFocus()">
+  ✕ Thoát focus <kbd>Esc</kbd>
+</div>
+
+<footer>
+  <p>🦀 Học Rust từ A đến Z &nbsp;·&nbsp; Tạo với ❤️ cho cộng đồng Rust Vietnam</p>
+  <p style="margin-top:4px"><a href="https://doc.rust-lang.org/book/">📘 The Rust Book</a> &nbsp;·&nbsp; <a href="https://www.rust-lang.org/">rust-lang.org</a></p>
+</footer>
+
+<script>
+// ==================== PROGRESS ====================
+function updateProgress() {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = Math.min(Math.round((scrollTop / docHeight) * 100), 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = pct + '%';
+}
+window.addEventListener('scroll', updateProgress);
+window.addEventListener('resize', updateProgress);
+updateProgress();
+
+// ==================== THEME ====================
+function toggleTheme() {
+  const html = document.documentElement;
+  const isLight = html.getAttribute('data-theme') === 'light';
+  html.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = isLight ? '🌙' : '☀️';
+  localStorage.setItem('rust-theme', isLight ? 'dark' : 'light');
+}
+const savedTheme = localStorage.getItem('rust-theme');
+if (savedTheme) {
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.getElementById('themeBtn').textContent = savedTheme === 'light' ? '☀️' : '🌙';
+}
+
+// ==================== TOC ====================
+function toggleTOC() {
+  document.getElementById('tocOverlay').classList.toggle('active');
+}
+document.getElementById('tocOverlay').addEventListener('click', function(e) {
+  if (e.target === this) toggleTOC();
+});
+
+// ==================== SEARCH ====================
+const searchData = [
+  {letter:'A',name:'Cài đặt & Hello World',id:'topic-a'},
+  {letter:'B',name:'Biến & Mutability',id:'topic-b'},
+  {letter:'C',name:'Kiểu dữ liệu',id:'topic-c'},
+  {letter:'D',name:'Hàm (Functions)',id:'topic-d'},
+  {letter:'E',name:'Control Flow',id:'topic-e'},
+  {letter:'F',name:'Pattern Matching',id:'topic-f'},
+  {letter:'G',name:'Structs & Enums',id:'topic-g'},
+  {letter:'H',name:'Ownership',id:'topic-h'},
+  {letter:'I',name:'References & Borrowing',id:'topic-i'},
+  {letter:'J',name:'Slices',id:'topic-j'},
+  {letter:'K',name:'Lifetime Annotations',id:'topic-k'},
+  {letter:'L',name:'Error Handling',id:'topic-l'},
+  {letter:'M',name:'Generics & Traits',id:'topic-m'},
+  {letter:'N',name:'Closures & Iterators',id:'topic-n'},
+  {letter:'O',name:'Smart Pointers',id:'topic-o'},
+  {letter:'P',name:'Concurrency',id:'topic-p'},
+  {letter:'Q',name:'Async/Await',id:'topic-q'},
+  {letter:'R',name:'Macros',id:'topic-r'},
+  {letter:'S',name:'Testing',id:'topic-s'},
+  {letter:'T',name:'Cargo',id:'topic-t'},
+  {letter:'U',name:'Crates phổ biến',id:'topic-u'},
+  {letter:'V',name:'Công cụ hữu ích',id:'topic-v'},
+  {letter:'W',name:'Dự án thực hành',id:'topic-w'},
+  {letter:'X',name:'Tài nguyên học tập',id:'topic-x'},
+  {letter:'Y',name:'Tips & Best Practices',id:'topic-y'},
+  {letter:'Z',name:'Bước tiếp theo',id:'topic-z'},
+];
+let searchIdx = -1;
+
+function toggleSearch() {
+  const overlay = document.getElementById('searchOverlay');
+  overlay.classList.toggle('active');
+  if (overlay.classList.contains('active')) {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchResults').innerHTML = '';
+    searchIdx = -1;
+    setTimeout(() => document.getElementById('searchInput').focus(), 100);
+  }
+}
+
+document.getElementById('searchInput').addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+  const results = document.getElementById('searchResults');
+  searchIdx = -1;
+  if (!q) { results.innerHTML = ''; return; }
+  const matches = searchData.filter(s =>
+    s.name.toLowerCase().includes(q) || s.letter.toLowerCase().includes(q)
+  );
+  results.innerHTML = matches.map((s,i) =>
+    `<a href="#${s.id}" class="${i===0?'highlight':''}" data-idx="${i}" onclick="toggleSearch()">
+      <span class="sr-letter">${s.letter}</span>${s.name}
+    </a>`
+  ).join('');
+});
+
+document.getElementById('searchInput').addEventListener('keydown', function(e) {
+  const items = document.querySelectorAll('.search-results a');
+  if (e.key === 'ArrowDown') { e.preventDefault(); searchIdx = Math.min(searchIdx+1, items.length-1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); searchIdx = Math.max(searchIdx-1, 0); }
+  else if (e.key === 'Enter' && searchIdx >= 0 && items[searchIdx]) { items[searchIdx].click(); }
+  items.forEach((el,i) => el.classList.toggle('highlight', i===searchIdx));
+});
+
+document.getElementById('searchOverlay').addEventListener('click', function(e) {
+  if (e.target === this) toggleSearch();
+});
+
+// ==================== FOCUS MODE ====================
+let focusedTopic = null;
+
+function focusTopic(letter) {
+  const sections = document.querySelectorAll('.section');
+  const topics = document.querySelectorAll('.topic');
+  focusedTopic = letter;
+  sections.forEach(s => s.classList.add('blurred'));
+  topics.forEach(t => {
+    if (t.dataset.letter === letter) t.closest('.section').classList.remove('blurred');
+  });
+  document.querySelectorAll('.topic[data-letter="' + letter + '"]').forEach(t => {
+    t.closest('.section').classList.add('focused');
+  });
+  document.getElementById('focusExit').classList.add('visible');
+  document.getElementById('kbdHint').classList.add('hide');
+}
+
+function exitFocus() {
+  focusedTopic = null;
+  document.querySelectorAll('.section').forEach(s => {
+    s.classList.remove('blurred', 'focused');
+  });
+  document.getElementById('focusExit').classList.remove('visible');
+  document.getElementById('kbdHint').classList.remove('hide');
+}
+
+// ==================== TOPIC CHECK ====================
+function toggleTopic(el) {
+  const topic = el.dataset.topic;
+  el.classList.toggle('checked');
+  const done = JSON.parse(localStorage.getItem('rust-done') || '{}');
+  done[topic] = el.classList.contains('checked');
+  localStorage.setItem('rust-done', JSON.stringify(done));
+  updateTopicProgress();
+}
+
+function updateTopicProgress() {
+  const done = JSON.parse(localStorage.getItem('rust-done') || '{}');
+  document.querySelectorAll('.topic-check').forEach(el => {
+    const t = el.dataset.topic;
+    el.classList.toggle('checked', !!done[t]);
+  });
+  const count = Object.values(done).filter(Boolean).length;
+  const total = 26;
+  document.getElementById('progressCount').textContent = count + '/' + total;
+  document.getElementById('tocProgressLabel').textContent = count + '/' + total;
+  document.getElementById('tocProgressFill').style.width = (count/total*100) + '%';
+}
+updateTopicProgress();
+
+// ==================== BACK TO TOP ====================
+window.addEventListener('scroll', function() {
+  document.getElementById('backTop').classList.toggle('visible', window.scrollY > 400);
+});
+
+// ==================== PARTICLES ====================
+(function initParticles() {
+  const c = document.getElementById('particles');
+  if (!c || document.documentElement.getAttribute('data-theme') === 'light') return;
+  const ctx = c.getContext('2d');
+  c.width = window.innerWidth; c.height = window.innerHeight;
+  const particles = [];
+  const count = 60;
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: Math.random() * c.width, y: Math.random() * c.height,
+      r: Math.random() * 1.5 + 0.5, dx: (Math.random() - 0.5) * 0.3,
+      dy: Math.random() * -0.3 - 0.1, o: Math.random() * 0.5 + 0.1
+    });
+  }
+  function draw() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    particles.forEach(p => {
+      p.x += p.dx; p.y += p.dy;
+      if (p.y < -10) { p.y = c.height + 10; p.x = Math.random() * c.width; }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${p.o})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+  window.addEventListener('resize', () => { c.width = window.innerWidth; c.height = window.innerHeight; });
+})();
+
+// ==================== PLAYGROUND ====================
+function runPlayground(btn) {
+  const code = btn.dataset.code || btn.closest('.code-block').querySelector('pre').textContent;
+  const url = 'https://play.rust-lang.org/?code=' + encodeURIComponent(
+    code.includes('fn main') ? code : 'fn main() {\n' + code.split('\n').map(l => '    ' + l).join('\n') + '\n}'
+  ) + '&edition=2021';
+  window.open(url, '_blank');
+}
+
+// ==================== COPY ====================
+function copyCode(btn) {
+  const code = btn.closest('.code-block').querySelector('pre').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ==================== NAV ACTIVE ====================
+const sections = document.querySelectorAll('.section');
+const navLinks = document.querySelectorAll('.nav-link');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => { const top = s.offsetTop - 150; if (window.scrollY >= top) current = s.id; });
+  navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current));
+});
+
+// ==================== SCROLL REVEAL ====================
+new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' })
+  .observeAll?.() || document.querySelectorAll('.reveal').forEach(el =>
+    new IntersectionObserver(([e]) => { if (e.isIntersecting) e.target.classList.add('visible'); }, { threshold: 0.1, rootMargin: '0px 0px -50px' }).observe(el)
+  );
+
+// Fallback for observeAll
+document.querySelectorAll('.reveal').forEach(el => {
+  const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.disconnect(); } }, { threshold: 0.1 });
+  obs.observe(el);
+});
+
+// ==================== KEYBOARD ====================
+document.addEventListener('keydown', function(e) {
+  if (e.target.tagName === 'INPUT') return;
+  const searchOverlay = document.getElementById('searchOverlay');
+  const tocOverlay = document.getElementById('tocOverlay');
+  if (e.key === 's' || e.key === 'S') { e.preventDefault(); toggleSearch(); }
+  if (e.key === 't' || e.key === 'T') { e.preventDefault(); toggleTOC(); }
+  if (e.key === 'f' || e.key === 'F') {
+    e.preventDefault();
+    if (focusedTopic) exitFocus();
+    else {
+      const visible = [...document.querySelectorAll('.topic')].find(t => {
+        const r = t.getBoundingClientRect(); return r.top >= 0 && r.top < window.innerHeight;
+      });
+      if (visible) focusTopic(visible.dataset.letter);
+    }
+  }
+  if (e.key === 'Escape') {
+    if (tocOverlay.classList.contains('active')) toggleTOC();
+    if (searchOverlay.classList.contains('active')) toggleSearch();
+    if (focusedTopic) exitFocus();
+  }
+});
+
+// ==================== KEYBOARD HINT AUTO-HIDE ====================
+setTimeout(() => { document.getElementById('kbdHint').classList.remove('show'); }, 8000);
+document.addEventListener('keydown', () => {
+  const hint = document.getElementById('kbdHint');
+  hint.classList.add('show');
+  clearTimeout(hint._timeout);
+  hint._timeout = setTimeout(() => hint.classList.remove('show'), 4000);
+});
+</script>
+
+</body>
+</html>
